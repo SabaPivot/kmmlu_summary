@@ -15,8 +15,8 @@ training_args:
   learning_rate: 2.0e-4 
   logging_steps: 5
   save_total_limit: 5
-  save_steps: 30
-  optim: paged_adamw_32bit 
+  save_steps: 40
+  optim: paged_adamw_32bit
   weight_decay: 0.01 
   lr_scheduler_type: linear 
   seed: 42
