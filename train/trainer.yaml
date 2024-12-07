@@ -1,0 +1,20 @@
+dataset:
+  max_seq_length: 2048
+  dataset_num_proc: 2
+  packing: false  # Enable packing for faster training with short sequences
+
+training_args:
+  per_device_train_batch_size: 6
+  gradient_accumulation_steps: 10
+  num_train_epochs: 5
+  warmup_steps: 4
+  learning_rate: 2.0e-4 
+  logging_steps: 10
+  save_total_limit: 5
+  save_steps: 30
+  optim: paged_adamw_32bit 
+  weight_decay: 0.01 
+  lr_scheduler_type: linear 
+  seed: 42
+  output_dir: outputs
+  report_to: wandb
