@@ -58,8 +58,6 @@ def load_train_data_in_chat_template(data_path, domain, tokenizer):
     train_data, dev_data, test_data = data["train"], data["dev"], data["test"]
     
     train_data = data["train"].map(lambda x: transform_and_format(x, tokenizer, True))
-    dev_data = data["dev"].map(lambda x: transform_and_format(x, tokenizer, False))
-    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, False))
     
     return train_data
 
