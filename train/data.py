@@ -49,23 +49,22 @@ def transform_and_format(data, tokenizer, if_train: bool):
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
         ).to("cuda")
 
-        return text
+        return {"text": text}
 
 
 def load_train_data_in_chat_template(data_path, domain, tokenizer):
     data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
-    train_data, dev_data, test_data = data["train"], data["dev"], data["test"]
-    
+
     train_data = data["train"].map(lambda x: transform_and_format(x, tokenizer, True))
-    
+
     return train_data
 
 def load_test_data_in_chat_template(data_path, domain, tokenizer):
     data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
-    dev_data, test_data = data["dev"], data["test"]
 
-    dev_data = transform_and_format(data["dev"], tokenizer, False)
-    test_data = transform_and_format(data["test"], tokenizer, False)
+    dev_data = data["dev"].map(lambda x: transform_and_format(x, tokenizer, False))
+    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, False))
+    
     return dev_data, test_data
