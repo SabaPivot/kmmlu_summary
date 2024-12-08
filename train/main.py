@@ -1,6 +1,6 @@
 import os, yaml, argparse
 import torch
-from model import load_peft_model
+from model import load_peft_model, load_model
 from data import load_train_data_in_chat_template, load_test_data_in_chat_template
 from train import set_trainer
 from inference import inference
@@ -12,20 +12,22 @@ with open("trainer.yaml", "r") as file:
 def main(mode):
     # Load model with Unsloth
     model_name = config["model"]["model_path"]
-    model, tokenizer = load_peft_model(model_name)
-
-    # Load Datasets
     data_path, domain = "HAERAE-HUB/KMMLU", config["dataset"]["domain"]
 
-    # Load data in chat template
-    train_data = load_train_data_in_chat_template(data_path, domain, tokenizer)
-    dev_data, test_data = load_test_data_in_chat_template(data_path, domain, tokenizer)
-
     if mode == "train":
+        # Load model and tokenizer
+        model, tokenizer = load_peft_model(model_name)
+
+        # Load data
+        train_data = load_train_data_in_chat_template(data_path, domain, tokenizer)
+
+        # Start Training
         trainer = set_trainer(model, tokenizer, train_data)
         trainer.train()
     
     elif mode == "inference":
+        model, tokenizer = load_model(model_name)
+        dev_data, test_data = load_test_data_in_chat_template(data_path, domain, tokenizer)
         inference(model, tokenizer, dev_data)
 
 if __name__ == "__main__":
