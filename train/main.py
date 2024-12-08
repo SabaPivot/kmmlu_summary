@@ -9,6 +9,9 @@ os.environ["WANDB_PROJECT"] = "KMMLU"
 with open("trainer.yaml", "r") as file:
     config = yaml.safe_load(file)
 
+def main(mode):
+    
+
 if __name__ == "__main__":
     # Load model with Unsloth
     model_name = config["model"]["model_path"]
@@ -21,7 +24,7 @@ if __name__ == "__main__":
     dev_data, train_data = load_test_data_in_chat_template(data_path, domain, tokenizer)
 
     # inference
-    inference(model, dev_data)
+    inference(model, tokenizer, dev_data)
     exit()
 
     # Start Train
