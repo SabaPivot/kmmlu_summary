@@ -4,9 +4,7 @@ import torch
 
 def inference(model, tokenizer, data):
     FastLanguageModel.for_inference(model)
-    data = data["text"]
-
-    print(tokenizer.batch_decode(data[0]))
+    data, kmmlu_ans = data["text"], data["answer"]
 
     answers = []
     for inputs in data:
@@ -16,8 +14,7 @@ def inference(model, tokenizer, data):
         input_ids=inputs,
         max_new_tokens=128, 
         use_cache=True, 
-        temperature=0.7,
-        top_p=0.9,
+        temperature=1.5,
         min_p=0.1
         )
 
@@ -25,7 +22,13 @@ def inference(model, tokenizer, data):
         result = tokenizer.batch_decode(outputs, skip_special_tokens=True)
         answers.append(result)
 
-    for ans in answers:
-        print(ans)
+    # Evaluation
+    answers = [1 if x == 'A' else 2 if x == 'B' else 3 if x == 'C' else 4 if x == 'D' else x for sublist in answers for x in sublist]
+    count = 0
+    for i in range(len(answers)):
+        print(answers[i], kmmlu_ans[i])
+        if answers[i] == kmmlu_ans[i]:
+            count += 1
+    print(f"{count}/{len(answers)}")
     
     return answers
