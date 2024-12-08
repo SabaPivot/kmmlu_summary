@@ -53,7 +53,7 @@ def transform_and_format(data, tokenizer, if_train: bool):
 
 
 def load_train_data_in_chat_template(data_path, domain, tokenizer):
-    data = load_dataset(model_path, domain)
+    data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
     train_data, dev_data, test_data = data["train"], data["dev"], data["test"]
     
@@ -64,7 +64,7 @@ def load_train_data_in_chat_template(data_path, domain, tokenizer):
     return train_data
 
 def load_test_data_in_chat_template(data_path, domain, tokenizer):
-    data = load_dataset(model_path, domain)
+    data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
     dev_data, test_data = data["dev"], data["test"]
 
