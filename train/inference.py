@@ -1,13 +1,13 @@
 from unsloth import FastLanguageModel
 import torch
-
+from tqdm import tqdm
 
 def inference(model, tokenizer, data):
     FastLanguageModel.for_inference(model)
     data, kmmlu_ans = data["text"], data["answer"]
 
     answers = []
-    for inputs in data:
+    for inputs in tqdm(data):
         inputs = torch.tensor(inputs).to('cuda')
         input_length = inputs.shape[-1]
         outputs = model.generate(
