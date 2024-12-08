@@ -22,11 +22,11 @@ def transform_and_format(data, tokenizer, if_train: bool):
              f"B: {data['B']}\n" \
              f"C: {data['C']}\n" \
              f"D: {data['D']}"
-    
-    answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
-    answer_choice = answer_map.get(data['answer'], "")
 
     if if_train:
+        answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
+        answer_choice = answer_map.get(data['answer'], "")
+        
         # Construct the conversations
         conversations = [
             {"role": "user", "content": prompt},
