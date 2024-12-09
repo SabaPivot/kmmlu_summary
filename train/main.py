@@ -12,7 +12,7 @@ with open("trainer.yaml", "r") as file:
 def main(mode):
     # Load model with Unsloth
     model_name = config["model"]["model_path"]
-    data_path, domain = "HAERAE-HUB/KMMLU", config["dataset"]["domain"]
+    data_path, domain = config["dataset"]["dataset_path"], config["dataset"]["domain"]
 
     if mode == "train":
         # Load model and tokenizer
