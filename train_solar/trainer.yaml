@@ -1,0 +1,25 @@
+model:
+  model_path: /home/elicer/kmmlu_summary/train_solar/outputs/checkpoint-4790
+
+dataset:
+  max_seq_length: 2048
+  dataset_num_proc: 2
+  packing: false  # Enable packing for faster training with short sequences
+  dataset_path: HAERAE-HUB/KMMLU
+  domain: Construction
+
+training_args:
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 10
+  num_train_epochs: 10
+  warmup_ratio: 0.05
+  learning_rate: 5.0e-6 
+  logging_steps: 5
+  save_total_limit: 3
+  save_steps: 500
+  optim: paged_adamw_32bit
+  weight_decay: 0.01 
+  lr_scheduler_type: cosine 
+  seed: 42
+  output_dir: outputs
+  report_to: wandb
