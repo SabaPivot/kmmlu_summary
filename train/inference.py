@@ -12,10 +12,11 @@ def inference(model, tokenizer, data):
         input_length = inputs.shape[-1]
         outputs = model.generate(
         input_ids=inputs,
-        max_new_tokens=128, 
-        use_cache=True, 
-        temperature=1.5,
-        min_p=0.1
+        max_new_tokens=512, 
+        use_cache=True,
+        # do_sample=False,
+        temperature=0.05,
+        top_k = 1
         )
 
         outputs = outputs[:, input_length:]
@@ -26,7 +27,6 @@ def inference(model, tokenizer, data):
     answers = [1 if x == 'A' else 2 if x == 'B' else 3 if x == 'C' else 4 if x == 'D' else x for sublist in answers for x in sublist]
     count = 0
     for i in range(len(answers)):
-        print(answers[i], kmmlu_ans[i])
         if answers[i] == kmmlu_ans[i]:
             count += 1
     print(f"{count}/{len(answers)}")
