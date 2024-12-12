@@ -4,7 +4,9 @@ from datasets import load_dataset
 
 with open("trainer.yaml", "r") as file:
     config = yaml.safe_load(file)
-data_path, domain = config["dataset"]["dataset_path"], config["dataset"]["domain"]
+
+data = load_dataset(config["dataset"]["dataset_path"], config["dataset"]["domain"])
+
 
 def get_unsloth_tokenizer(tokenizer):
     """
@@ -16,6 +18,7 @@ def get_unsloth_tokenizer(tokenizer):
     )
     return tokenizer
 
+
 def get_prompt(data):
     prompt = f"{data['question']}\n" \
              f"A: {data['A']}\n" \
@@ -24,6 +27,12 @@ def get_prompt(data):
              f"D: {data['D']}"
     return prompt
 
+
+def get_answer_choice(answer_key):
+    answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
+    return answer_map.get(answer_key, "")
+
+
 def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
     """
     Mapping function returns QWEN 2.5 formatted 'text'
@@ -31,8 +40,7 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
     prompt = get_prompt(data)
 
     if train:
-        answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
-        answer_choice = answer_map.get(data['answer'], "")
+        answer_choice = get_answer_choice(data['answer'])
         
         # Construct the conversations
         conversations = [
@@ -61,8 +69,6 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
                 {"role": "user", "content": prompt},
             ]
 
-        print(conversations)
-
         text = tokenizer.apply_chat_template(
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
         ).to("cuda")
@@ -74,7 +80,6 @@ def load_train_data_in_chat_template(tokenizer):
     """
     Get model tokenizer and return train data with chat template applied.
     """
-    data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
 
     # always set train=True
@@ -89,7 +94,6 @@ def load_test_data_in_chat_template(tokenizer, fewshot):
 
     You can give direct fewshot using dev dataset, with giving arguemnt fewshot=True in "transfrom_and_format" function
     """
-    data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
     
     # To apply few shot set fewshot=True
@@ -102,16 +106,12 @@ def load_fewshot_data_in_chat_template():
     """
     load 5 fewshot data from "dev" data, which contains 5 rows data.
     """
-    data = load_dataset(data_path, domain)
     dev_data = data["dev"]
     
     few_shot_conversations = []
-
-    answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
-
     for i in range(4):
         question = get_prompt(dev_data[i])
-        answer_choice = answer_map.get(dev_data[i]['answer'], "")
+        answer_choice = get_answer_choice(dev_data[i]['answer'])
         
         few_shot_conversations.append({"role": "user", "content": question})
         few_shot_conversations.append({"role": "assistant", "content": answer_choice})
