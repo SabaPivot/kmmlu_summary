@@ -1,6 +1,10 @@
+import yaml
 from unsloth.chat_templates import get_chat_template
 from datasets import load_dataset
 
+with open("trainer.yaml", "r") as file:
+    config = yaml.safe_load(file)
+data_path, domain = config["dataset"]["dataset_path"], config["dataset"]["domain"]
 
 def get_unsloth_tokenizer(tokenizer):
     """
@@ -12,18 +16,21 @@ def get_unsloth_tokenizer(tokenizer):
     )
     return tokenizer
 
-
-def transform_and_format(data, tokenizer, if_train: bool):
-    """
-    Mapping function returns QWEN 2.5 formatted 'text'
-    """
+def get_prompt(data):
     prompt = f"{data['question']}\n" \
              f"A: {data['A']}\n" \
              f"B: {data['B']}\n" \
              f"C: {data['C']}\n" \
              f"D: {data['D']}"
+    return prompt
 
-    if if_train:
+def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
+    """
+    Mapping function returns QWEN 2.5 formatted 'text'
+    """
+    prompt = get_prompt(data)
+
+    if train:
         answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
         answer_choice = answer_map.get(data['answer'], "")
         
@@ -41,10 +48,21 @@ def transform_and_format(data, tokenizer, if_train: bool):
         return {"text": text}
 
     else:
-        conversations = [
-            {"role": "user", "content": prompt},
-        ]
-        
+        if not fewshot:
+            conversations = [
+                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
+                {"role": "user", "content": prompt},
+            ]
+
+        else:
+            conversations = [
+                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
+                *load_fewshot_data_in_chat_template(),
+                {"role": "user", "content": prompt},
+            ]
+
+        print(conversations)
+
         text = tokenizer.apply_chat_template(
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
         ).to("cuda")
@@ -52,19 +70,50 @@ def transform_and_format(data, tokenizer, if_train: bool):
         return {"text": text}
 
 
-def load_train_data_in_chat_template(data_path, domain, tokenizer):
+def load_train_data_in_chat_template(tokenizer):
+    """
+    Get model tokenizer and return train data with chat template applied.
+    """
     data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
 
-    train_data = data["train"].map(lambda x: transform_and_format(x, tokenizer, True))
+    # always set train=True
+    train_data = data["train"].map(lambda x: transform_and_format(x, tokenizer, train=True, fewshot=False))
 
     return train_data
 
-def load_test_data_in_chat_template(data_path, domain, tokenizer):
+
+def load_test_data_in_chat_template(tokenizer, fewshot):
+    """
+    Get model tokenizer and return test data with chat template applied.
+
+    You can give direct fewshot using dev dataset, with giving arguemnt fewshot=True in "transfrom_and_format" function
+    """
     data = load_dataset(data_path, domain)
     tokenizer = get_unsloth_tokenizer(tokenizer)
-
-    dev_data = data["dev"].map(lambda x: transform_and_format(x, tokenizer, False))
-    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, False))
     
-    return dev_data, test_data
+    # To apply few shot set fewshot=True
+    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, train=False, fewshot=fewshot))
+    
+    return test_data
+
+
+def load_fewshot_data_in_chat_template():
+    """
+    load 5 fewshot data from "dev" data, which contains 5 rows data.
+    """
+    data = load_dataset(data_path, domain)
+    dev_data = data["dev"]
+    
+    few_shot_conversations = []
+
+    answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
+
+    for i in range(4):
+        question = get_prompt(dev_data[i])
+        answer_choice = answer_map.get(dev_data[i]['answer'], "")
+        
+        few_shot_conversations.append({"role": "user", "content": question})
+        few_shot_conversations.append({"role": "assistant", "content": answer_choice})
+
+    return few_shot_conversations
