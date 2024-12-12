@@ -33,7 +33,7 @@ def get_answer_choice(answer_key):
     return answer_map.get(answer_key, "")
 
 
-def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
+def transform_and_format(data, tokenizer, train: bool, fewshot: bool, cot: bool):
     """
     Mapping function returns QWEN 2.5 formatted 'text'
     """
@@ -63,11 +63,18 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool):
             ]
 
         else:
-            conversations = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
-                *load_fewshot_data_in_chat_template(),
-                {"role": "user", "content": prompt},
-            ]
+            if not cot:
+                conversations = [
+                    {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
+                    *load_fewshot_data_in_chat_template(),
+                    {"role": "user", "content": prompt},
+                ]
+            if cot:
+                conversations = [
+                    {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
+                    *load_chain_of_thought_in_chat_template(),
+                    {"role": "user", "content": prompt},
+                ]
 
         text = tokenizer.apply_chat_template(
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
@@ -88,7 +95,7 @@ def load_train_data_in_chat_template(tokenizer):
     return train_data
 
 
-def load_test_data_in_chat_template(tokenizer, fewshot):
+def load_test_data_in_chat_template(tokenizer, fewshot, cot):
     """
     Get model tokenizer and return test data with chat template applied.
 
@@ -97,7 +104,7 @@ def load_test_data_in_chat_template(tokenizer, fewshot):
     tokenizer = get_unsloth_tokenizer(tokenizer)
     
     # To apply few shot set fewshot=True
-    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, train=False, fewshot=fewshot))
+    test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, train=False, fewshot=fewshot, cot=cot))
     
     return test_data
 
@@ -117,3 +124,20 @@ def load_fewshot_data_in_chat_template():
         few_shot_conversations.append({"role": "assistant", "content": answer_choice})
 
     return few_shot_conversations
+
+
+def load_chain_of_thought_in_chat_template():
+    """
+    load 5 fewshot data from "dev" split "chain_of_thought" column, which contains 5 rows data.
+    """
+    dev_data = data["dev"]
+    
+    chain_of_thought_conversations = []
+    for i in range(len(dev_data)):
+        question = get_prompt(dev_data[i])
+        chain_of_thought = dev_data[i]["chain_of_thought"]
+        
+        few_shot_conversations.append({"role": "user", "content": question})
+        few_shot_conversations.append({"role": "assistant", "content": chain_of_thought})
+
+    return chain_of_thought_conversations
