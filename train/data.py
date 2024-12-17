@@ -56,25 +56,24 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool, cot: bool)
         return {"text": text}
 
     else:
-        if not fewshot:
-            conversations = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
-                {"role": "user", "content": prompt},
-            ]
-
-        else:
-            if not cot:
-                conversations = [
-                    {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
-                    *load_fewshot_data_in_chat_template(),
-                    {"role": "user", "content": prompt},
-                ]
-            if cot:
-                conversations = [
-                    {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
-                    *load_chain_of_thought_in_chat_template(),
-                    {"role": "user", "content": prompt},
-                ]
+        if cot:  # Chain of Thought Few-shot
+    conversations = [
+        {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+        *load_chain_of_thought_in_chat_template(),
+        {"role": "user", "content": prompt},
+    ]
+    
+    elif fewshot:  # Few-shot (without CoT)
+        conversations = [
+            {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+            *load_fewshot_data_in_chat_template(),
+            {"role": "user", "content": prompt},
+        ]
+    else:  # Zero-shot
+        conversations = [
+            {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
+            {"role": "user", "content": prompt},
+        ]
 
         text = tokenizer.apply_chat_template(
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
