@@ -12,9 +12,9 @@ def inference(model, tokenizer, data):
         input_length = inputs.shape[-1]
         outputs = model.generate(
         input_ids=inputs,
-        max_new_tokens=512, 
+        max_new_tokens=1, 
         use_cache=True,
-        # do_sample=False,
+        do_sample=False,
         temperature=0.05,
         top_k = 1
         )
