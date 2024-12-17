@@ -115,7 +115,7 @@ def load_fewshot_data_in_chat_template():
     dev_data = data["dev"]
     
     few_shot_conversations = []
-    for i in range(4):
+    for i in range(len(dev_data)):
         question = get_prompt(dev_data[i])
         answer_choice = get_answer_choice(dev_data[i]['answer'])
         
@@ -136,7 +136,7 @@ def load_chain_of_thought_in_chat_template():
         question = get_prompt(dev_data[i])
         chain_of_thought = dev_data[i]["chain_of_thought"]
         
-        few_shot_conversations.append({"role": "user", "content": question})
-        few_shot_conversations.append({"role": "assistant", "content": chain_of_thought})
+        chain_of_thought_conversations.append({"role": "user", "content": question})
+        chain_of_thought_conversations.append({"role": "assistant", "content": chain_of_thought})
 
     return chain_of_thought_conversations
