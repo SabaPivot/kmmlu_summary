@@ -20,34 +20,63 @@ def inference(model, tokenizer, data, fewshot, cot):
     FastLanguageModel.for_inference(model)
     data, kmmlu_ans = data["text"], data["answer"]
 
-    stop_tokens = ["A", "B", "C", "D"]
-    stopping_criteria = StoppingCriteriaList([AlphabetStoppingCriteria(stop_tokens, tokenizer)])
+    if fewshot or cot:
+        answers = []
+        for inputs in tqdm(data):
+            inputs = torch.tensor(inputs).to('cuda')
+            input_length = inputs.shape[-1]
+            outputs = model.generate(
+                input_ids=inputs,
+                max_new_tokens=2048,
+                do_sample=True,
+                temperature=0.3,
+            )
 
-    answers = []
-    for inputs in tqdm(data):
-        inputs = torch.tensor(inputs).to('cuda')
-        input_length = inputs.shape[-1]
-        outputs = model.generate(
-            input_ids=inputs,
-            max_new_tokens=2048,
-            stopping_criteria=stopping_criteria,
-            do_sample=False,
-            temperature=0.05,
-            # top_k = 1
-        )
+            outputs = outputs[:, input_length:] 
 
-        outputs = outputs[:, input_length:]  # This slices off the input part of the sequence
+            answers = []
+            result = ""
+            for i in range(outputs.size(0)):
+                decoded = tokenizer.decode(outputs[i], skip_special_tokens=True)
+                if decoded[0] in {'A', 'B', 'C', 'D'}:
+                    result = char
+                else:
+                    for char in reversed(decoded):
+                        if char in {'A', 'B', 'C', 'D'}:
+                            result = char
+                            break
+                
+                if result == "":
+                    result = "A"
+                    print(f"Add: {result}")
+                    print(f"result: {decoded}")
+                answers.append(result)
+
+    else:
+        stop_tokens = ["A", "B", "C", "D"]
+        stopping_criteria = StoppingCriteriaList([AlphabetStoppingCriteria(stop_tokens, tokenizer)])
 
         answers = []
-        for i in range(outputs.size(0)):
-            # Decode one sequence of token IDs at a time
-            decoded = tokenizer.decode(outputs[i], skip_special_tokens=True)
-            result = decoded.strip().split()[-1]
-            
-            if result not in stop_tokens:
-                print(f"Add: {result[-1]}")
-                print(f"result: {decoded}")
-            answers.append(result[-1])
+        for inputs in tqdm(data):
+            inputs = torch.tensor(inputs).to('cuda')
+            input_length = inputs.shape[-1]
+            outputs = model.generate(
+                input_ids=inputs,
+                max_new_tokens=2048,
+                stopping_criteria=stopping_criteria,
+                do_sample=False
+            )
+
+            outputs = outputs[:, input_length:]
+
+            for i in range(outputs.size(0)):
+                decoded = tokenizer.decode(outputs[i], skip_special_tokens=True)
+                result = decoded.strip().split()[-1]
+                
+                if result not in stop_tokens:
+                    print(f"Add: {result[-1]}")
+                    print(f"result: {decoded}")
+                answers.append(result[-1])
 
     answers = [
         1 if x in ('A') else
@@ -64,4 +93,3 @@ def inference(model, tokenizer, data, fewshot, cot):
     print(f"{count}/{len(answers)}")
     
     return answers
-    
