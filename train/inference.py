@@ -1,30 +1,62 @@
 from unsloth import FastLanguageModel
 import torch
 from tqdm import tqdm
+from transformers import StoppingCriteria, StoppingCriteriaList
 
-def inference(model, tokenizer, data):
+class AlphabetStoppingCriteria(StoppingCriteria):
+    def __init__(self, stop_tokens, tokenizer):
+        self.stop_tokens = stop_tokens
+        self.tokenizer = tokenizer
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        last_token_id = input_ids[0, -1].item()
+        last_token = self.tokenizer.decode([last_token_id], skip_special_tokens=True).strip()
+
+        return last_token in self.stop_tokens
+
+
+
+def inference(model, tokenizer, data, fewshot, cot):
     FastLanguageModel.for_inference(model)
     data, kmmlu_ans = data["text"], data["answer"]
+
+    stop_tokens = ["A", "B", "C", "D"]
+    stopping_criteria = StoppingCriteriaList([AlphabetStoppingCriteria(stop_tokens, tokenizer)])
 
     answers = []
     for inputs in tqdm(data):
         inputs = torch.tensor(inputs).to('cuda')
         input_length = inputs.shape[-1]
         outputs = model.generate(
-        input_ids=inputs,
-        max_new_tokens=1, 
-        use_cache=True,
-        do_sample=False,
-        temperature=0.05,
-        top_k = 1
+            input_ids=inputs,
+            max_new_tokens=2048,
+            stopping_criteria=stopping_criteria,
+            do_sample=False,
+            temperature=0.05,
+            # top_k = 1
         )
 
-        outputs = outputs[:, input_length:]
-        result = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-        answers.append(result)
+        outputs = outputs[:, input_length:]  # This slices off the input part of the sequence
 
-    # Evaluation
-    answers = [1 if x == 'A' else 2 if x == 'B' else 3 if x == 'C' else 4 if x == 'D' else x for sublist in answers for x in sublist]
+        answers = []
+        for i in range(outputs.size(0)):
+            # Decode one sequence of token IDs at a time
+            decoded = tokenizer.decode(outputs[i], skip_special_tokens=True)
+            result = decoded.strip().split()[-1]
+            
+            if result not in stop_tokens:
+                print(f"Add: {result[-1]}")
+                print(f"result: {decoded}")
+            answers.append(result[-1])
+
+    answers = [
+        1 if x in ('A') else
+        2 if x in ('B') else
+        3 if x in ('C') else
+        4 if x in ('D') else x
+        for x in answers
+    ]
+
     count = 0
     for i in range(len(answers)):
         if answers[i] == kmmlu_ans[i]:
@@ -32,3 +64,4 @@ def inference(model, tokenizer, data):
     print(f"{count}/{len(answers)}")
     
     return answers
+    
