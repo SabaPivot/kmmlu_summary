@@ -3,10 +3,11 @@ import yaml
 import os
 
 yaml_file = "trainer.yaml"
+log_file = "inference_logs.txt"
 
 domains = [
-    "Accounting",
-    "Agricultural-Sciences",
+    # "Accounting",
+    # "Agricultural-Sciences",
     "Aviation-Engineering-and-Maintenance",
     "Biology",
     "Chemical-Engineering",
@@ -62,22 +63,32 @@ def update_yaml_domain(domain):
     config['dataset']['domain'] = domain
     with open(yaml_file, "w") as file:
         yaml.dump(config, file, default_flow_style=False)
-    print(f"\n--- Updated YAML for domain: {domain} ---")
+    with open(log_file, "a") as log:
+        log.write(f"\n--- Updated YAML for domain: {domain} ---\n")
 
 def execute_commands():
+    with open(log_file, "w") as log:
+        log.write("Inference Logs\n" + "=" * 50 + "\n")
+    
     for domain in domains:
         update_yaml_domain(domain)
-        print(f"\nResults for domain: **{domain}**\n{'-' * 40}")
+        with open(log_file, "a") as log:
+            log.write(f"\nResults for domain: **{domain}**\n{'-' * 40}\n")
         
         for description, command in commands:
-            print(f"Running {description}...")
+            with open(log_file, "a") as log:
+                log.write(f"Running {description}...\n")
+            
             result = subprocess.run(command, capture_output=True, text=True)
             
             if result.returncode == 0:
-                print(f"{description}: ✅ Success\nOutput:\n{result.stdout.strip()}")
+                output = f"{description}: ✅ Success\nOutput:\n{result.stdout.strip()}"
             else:
-                print(f"{description}: ❌ Failed\nError:\n{result.stderr.strip()}")
-            print("-" * 40)
+                output = f"{description}: ❌ Failed\nError:\n{result.stderr.strip()}"
+
+            with open(log_file, "a") as log:
+                log.write(output + "\n" + "-" * 40 + "\n")
+                print(output)
 
 if __name__ == "__main__":
     execute_commands()
