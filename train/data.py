@@ -32,6 +32,38 @@ def get_answer_choice(answer_key):
     answer_map = {1: "A", 2: "B", 3: "C", 4: "D"}
     return answer_map.get(answer_key, "")
 
+def load_fewshot_data_in_chat_template():
+    """
+    load 5 fewshot data from "dev" data, which contains 5 rows data.
+    """
+    dev_data = data["dev"]
+    
+    few_shot_conversations = []
+    for i in range(len(dev_data)):
+        question = get_prompt(dev_data[i])
+        answer_choice = get_answer_choice(dev_data[i]['answer'])
+        
+        few_shot_conversations.append({"role": "user", "content": question})
+        few_shot_conversations.append({"role": "assistant", "content": answer_choice})
+
+    return few_shot_conversations
+
+
+def load_chain_of_thought_in_chat_template():
+    """
+    load 5 fewshot data from "dev" split "chain_of_thought" column, which contains 5 rows data.
+    """
+    dev_data = data["dev"]
+    
+    chain_of_thought_conversations = []
+    for i in range(len(dev_data)):
+        question = get_prompt(dev_data[i])
+        chain_of_thought = dev_data[i]["chain_of_thought"].strip()
+        
+        chain_of_thought_conversations.append({"role": "user", "content": question})
+        chain_of_thought_conversations.append({"role": "assistant", "content": chain_of_thought})
+
+    return chain_of_thought_conversations
 
 def transform_and_format(data, tokenizer, train: bool, fewshot: bool, cot: bool):
     """
@@ -58,14 +90,14 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool, cot: bool)
     else:
         if cot:  # Chain of Thought Few-shot
           conversations = [
-              {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+              {"role": "system", "content": "You are Qwen, created by Alibaba Cloud."},
               *load_chain_of_thought_in_chat_template(),
               {"role": "user", "content": prompt},
           ]
     
         elif fewshot:  # Few-shot (without CoT)
           conversations = [
-              {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+              {"role": "system", "content": "You are Qwen, created by Alibaba Cloud."},
               *load_fewshot_data_in_chat_template(),
               {"role": "user", "content": prompt},
           ]
@@ -74,7 +106,7 @@ def transform_and_format(data, tokenizer, train: bool, fewshot: bool, cot: bool)
               {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant. Answer with one alphabet letter."},
               {"role": "user", "content": prompt},
           ]
-
+        
         text = tokenizer.apply_chat_template(
             conversations, tokenize=True, add_generation_prompt=True, return_tensors="pt"
         ).to("cuda")
@@ -106,37 +138,3 @@ def load_test_data_in_chat_template(tokenizer, fewshot, cot):
     test_data = data["test"].map(lambda x: transform_and_format(x, tokenizer, train=False, fewshot=fewshot, cot=cot))
     
     return test_data
-
-
-def load_fewshot_data_in_chat_template():
-    """
-    load 5 fewshot data from "dev" data, which contains 5 rows data.
-    """
-    dev_data = data["dev"]
-    
-    few_shot_conversations = []
-    for i in range(len(dev_data)):
-        question = get_prompt(dev_data[i])
-        answer_choice = get_answer_choice(dev_data[i]['answer'])
-        
-        few_shot_conversations.append({"role": "user", "content": question})
-        few_shot_conversations.append({"role": "assistant", "content": answer_choice})
-
-    return few_shot_conversations
-
-
-def load_chain_of_thought_in_chat_template():
-    """
-    load 5 fewshot data from "dev" split "chain_of_thought" column, which contains 5 rows data.
-    """
-    dev_data = data["dev"]
-    
-    chain_of_thought_conversations = []
-    for i in range(len(dev_data)):
-        question = get_prompt(dev_data[i])
-        chain_of_thought = dev_data[i]["chain_of_thought"]
-        
-        chain_of_thought_conversations.append({"role": "user", "content": question})
-        chain_of_thought_conversations.append({"role": "assistant", "content": chain_of_thought})
-
-    return chain_of_thought_conversations
