@@ -27,7 +27,7 @@ def main(mode, fewshot, cot):
     elif mode == "inference":
         model, tokenizer = load_model(model_name)
         test_data = load_test_data_in_chat_template(tokenizer, fewshot=fewshot, cot=cot)
-        inference(model, tokenizer, test_data)
+        inference(model, tokenizer, test_data, fewshot=fewshot, cot=cot)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="KMMLU Train/Inference Script")
