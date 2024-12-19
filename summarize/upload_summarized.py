@@ -19,4 +19,4 @@ for domain in domains:
     )
     print(train_dataset)
     print(dataset_dict)
-    dataset_dict.push_to_hub("SabaPivot/KMMLU-Summarized", config_name=domain)
+    dataset_dict.push_to_hub("SabaPivot/KMMLU-Summarized-Chain_of_Thought", config_name=domain)
