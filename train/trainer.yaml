@@ -1,24 +1,23 @@
+dataset:
+  dataset_num_proc: 4
+  dataset_path: SabaPivot/KMMLU-Summarized-Chain_of_Thought
+  domain: Aviation-Engineering-and-Maintenance
+  max_seq_length: 2048
+  packing: false
 model:
   model_path: unsloth/Qwen2.5-32B-Instruct
-dataset:
-  max_seq_length: 2048
-  dataset_num_proc: 4
-  packing: false  # Enable packing for faster training with short sequences
-  dataset_path: SabaPivot/KMMLU-Summarized-Chain_of_Thought
-  domain: Biology
-
 training_args:
-  per_device_train_batch_size: 16
   gradient_accumulation_steps: 1
-  num_train_epochs: 5
-  warmup_steps: 0
-  learning_rate: 5.0e-6 
+  learning_rate: 5.0e-06
   logging_steps: 5
-  save_total_limit: 3
-  save_steps: 30
+  lr_scheduler_type: cosine
+  num_train_epochs: 5
   optim: paged_adamw_32bit
-  weight_decay: 0.01 
-  lr_scheduler_type: cosine 
-  seed: 42
   output_dir: outputs2
+  per_device_train_batch_size: 16
   report_to: wandb
+  save_steps: 30
+  save_total_limit: 3
+  seed: 42
+  warmup_steps: 0
+  weight_decay: 0.01
