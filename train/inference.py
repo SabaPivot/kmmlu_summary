@@ -34,12 +34,11 @@ def inference(model, tokenizer, data, fewshot, cot):
 
             outputs = outputs[:, input_length:] 
 
-            answers = []
             result = ""
             for i in range(outputs.size(0)):
                 decoded = tokenizer.decode(outputs[i], skip_special_tokens=True)
                 if decoded[0] in {'A', 'B', 'C', 'D'}:
-                    result = char
+                    result = decoded[0]
                 else:
                     for char in reversed(decoded):
                         if char in {'A', 'B', 'C', 'D'}:
@@ -79,10 +78,10 @@ def inference(model, tokenizer, data, fewshot, cot):
                 answers.append(result[-1])
 
     answers = [
-        1 if x in ('A') else
-        2 if x in ('B') else
-        3 if x in ('C') else
-        4 if x in ('D') else x
+        1 if x in 'A' else
+        2 if x in 'B' else
+        3 if x in 'C' else
+        4 if x in 'D' else x
         for x in answers
     ]
 
