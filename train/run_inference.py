@@ -6,8 +6,8 @@ yaml_file = "trainer.yaml"
 log_file = "inference_logs.txt"
 
 domains = [
-    # "Accounting",
-    # "Agricultural-Sciences",
+    "Accounting",
+    "Agricultural-Sciences",
     "Aviation-Engineering-and-Maintenance",
     "Biology",
     "Chemical-Engineering",
@@ -56,6 +56,7 @@ commands = [
     ("CoT fewshot", ["python", "main.py", "--mode", "inference", "--cot"]),
 ]
 
+
 def update_yaml_domain(domain):
     """Update the 'domain' field in the YAML file."""
     with open(yaml_file, "r") as file:
@@ -66,29 +67,41 @@ def update_yaml_domain(domain):
     with open(log_file, "a") as log:
         log.write(f"\n--- Updated YAML for domain: {domain} ---\n")
 
+
 def execute_commands():
     with open(log_file, "w") as log:
         log.write("Inference Logs\n" + "=" * 50 + "\n")
-    
+
     for domain in domains:
         update_yaml_domain(domain)
         with open(log_file, "a") as log:
             log.write(f"\nResults for domain: **{domain}**\n{'-' * 40}\n")
-        
+
+        # Start all commands in parallel
+        processes = []
         for description, command in commands:
-            with open(log_file, "a") as log:
-                log.write(f"Running {description}...\n")
-            
-            result = subprocess.run(command, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                output = f"{description}: ✅ Success\nOutput:\n{result.stdout.strip()}"
+            p = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            processes.append((description, p))
+
+        # Wait for all processes to finish and log results
+        for description, p in processes:
+            stdout, stderr = p.communicate()
+            returncode = p.returncode
+
+            if returncode == 0:
+                output = f"{description}: ✅ Success\nOutput:\n{stdout.strip()}"
             else:
-                output = f"{description}: ❌ Failed\nError:\n{result.stderr.strip()}"
+                output = f"{description}: ❌ Failed\nError:\n{stderr.strip()}"
 
             with open(log_file, "a") as log:
                 log.write(output + "\n" + "-" * 40 + "\n")
                 print(output)
+
 
 if __name__ == "__main__":
     execute_commands()
