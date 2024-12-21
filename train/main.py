@@ -27,6 +27,7 @@ def main(mode, fewshot, cot):
     elif mode == "inference":
         model, tokenizer = load_model(model_name)
         test_data = load_test_data_in_chat_template(tokenizer, fewshot=fewshot, cot=cot)
+        test_data = test_data.shuffle(seed=42).select(range(100))
         inference(model, tokenizer, test_data, fewshot=fewshot, cot=cot)
 
 if __name__ == "__main__":
