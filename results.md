@@ -2,7 +2,7 @@
 |:----------------|:-------------------------------------------|---------:|-----------------:|--------------:|-----------------:|
 | HUMSS           | Accounting                                 |     58   |             66   |          59   |             61   |
 | STEM            | Agricultural-Sciences                      |     43.9 |             48.2 |          40.5 |             44.2 |
-| STEM            | Aviation-Engineering-and-Maintenance       |     57.1 |             62.2 |           6.2 |             41.8 |
+| STEM            | Aviation-Engineering-and-Maintenance       |     57.1 |             62.2 |          62.2 |             60.5 |
 | STEM            | Biology                                    |     49   |             49   |          49   |             49   |
 | STEM            | Chemical-Engineering                       |     59   |             64   |          67   |             63.3 |
 | STEM            | Chemistry                                  |     51   |             64   |          62   |             59   |

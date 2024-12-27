@@ -54,6 +54,20 @@ This project aims to enhance and analyze the [KMMLU dataset](https://huggingface
 
 To see the full result, please refer to the [results.md](results.md) file.
 
+### Remarks
+##### **Math (STEM Category)**
+- **0-shot:** 32.0  
+- **Direct Fewshot:** 65.0  
+- **CoT Fewshot:** 82.0  
+This domain has the **largest performance improvement** moving from 0-shot to CoT Fewshot, with a jump of **+50 points** from 32.0 to 82.0. This dramatic gain suggests that reasoning through CoT methods significantly benefits mathematical problem-solving.
+
+#### **Korean-History (HUMSS Category)**
+- **0-shot:** 37.0  
+- **Direct Fewshot:** 34.0  
+- **CoT Fewshot:** 29.0  
+Korean-History shows a **performance decline** as it moves from 0-shot to CoT Fewshot. The drop from **37.0 to 29.0** (-8 points) suggests that the model struggles with complex reasoning or contextual continuity in this domain.
+
+
 
 ## License
 This project inherits the license from the original KMMLU dataset.
