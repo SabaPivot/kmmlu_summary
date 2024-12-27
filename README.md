@@ -44,13 +44,13 @@ This project aims to enhance and analyze the [KMMLU dataset](https://huggingface
 - Monthly downloads: 542
 
 ## Results
-| Category         | 0-shot | Direct Fewshot | CoT Fewshot | Average |
-|------------------|--------|----------------|-------------|---------|
-| Applied Science  | 51.0   | 55.7           | 55.8        | 54.2    |
-| HUMSS            | 59.7   | 62.2           | 58.6        | 60.2    |
-| Other            | 62.0   | 64.7           | 61.7        | 62.8    |
-| STEM             | 54.4   | 61.7           | 59.1        | 58.4    |
-| **Overall Average** | 56.1   | 61.2           | 58.7        | 58.7    |
+|                 |   0-shot |   Direct Fewshot |   CoT Fewshot |   Domain Average |
+|:----------------|---------:|-----------------:|--------------:|-----------------:|
+| Applied Science |     51   |             55.7 |          55.8 |             54.2 |
+| HUMSS           |     59.7 |             62.2 |          58.6 |             60.2 |
+| Other           |     62   |             64.7 |          61.7 |             62.8 |
+| STEM            |     54.4 |             61.7 |          61.9 |             59.3 |
+| Overall Average |     56.1 |             61.2 |          60   |             59.1 |
 
 To see the full result, please refer to the [results.md](results.md) file.
 
@@ -67,7 +67,41 @@ This domain has the **largest performance improvement** moving from 0-shot to Co
 - **CoT Fewshot:** 29.0  
 Korean-History shows a **performance decline** as it moves from 0-shot to CoT Fewshot. The drop from **37.0 to 29.0** (-8 points) suggests that the model struggles with complex reasoning or contextual continuity in this domain.
 
+## Analysis
+### Trends in Evaluation Methods Across Categories
 
+#### **1. General Trends**
+- **Direct Fewshot consistently outperforms 0-shot and CoT Fewshot** in most categories. This indicates that the model benefits significantly from specific, well-structured input examples.
+- **CoT Fewshot (Chain-of-Thought)** shows notable improvements over 0-shot in reasoning-intensive domains like **Math**, but it sometimes underperforms in less structured or context-heavy domains like **Korean-History**. This is mainly due to the model (QWEN 2.5-32B-it) being less capable of handling Korean HUMSS knowledge.
+
+---
+
+#### **2. Category-Wise Observations**
+
+##### **STEM**
+- **CoT Fewshot improves reasoning-intensive domains**:
+  - **Math** shows a dramatic improvement from **32.0 (0-shot)** to **82.0 (CoT Fewshot)**.
+  - However, in simpler domains like **Biology**, CoT Fewshot offers no improvement over 0-shot (**49.0 across all methods**).
+- **Direct Fewshot is stable and strong** across most domains, with consistent scores around **60–70 points**.
+
+##### **Applied Science**
+- **Direct Fewshot dominates** in this category, with an average score of **55.7**.
+- CoT Fewshot and Direct Fewshot are close in performance, indicating the evaluation methods have a smaller gap in these domains, likely due to more straightforward tasks.
+
+##### **HUMSS (Humanities and Social Sciences)**
+- **Direct Fewshot outperforms CoT Fewshot**, particularly in reasoning or contextual domains like **Political-Science-and-Sociology** and **Social-Welfare**.
+- **CoT Fewshot underperforms in context-heavy domains** like **Korean-History** (29.0) and **Law** (50.0), suggesting it struggles with nuanced reasoning and legal or historical narratives. This is mainly due to the model (QWEN 2.5-32B-it) being less capable of handling Korean HUMSS knowledge.
+
+##### **Other**
+- Balanced high scores across all methods, reflecting the domains' straightforward and structured nature.
+- **Direct Fewshot** slightly leads, but the differences among methods are smaller than in other categories.
+
+---
+
+#### **3. Key Insights**
+- **Direct Fewshot** is the most effective method overall, likely due to its ability to guide the model with targeted examples.
+- **CoT Fewshot** shines in domains requiring step-by-step reasoning (e.g., Math, STEM domains) but struggles in context-heavy domains.
+- **0-shot** generally serves as a baseline and underperforms compared to the guided evaluation methods, but it is competitive in simpler domains like **Biology** and **Fashion**.
 
 ## License
 This project inherits the license from the original KMMLU dataset.
