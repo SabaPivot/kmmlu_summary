@@ -38,6 +38,33 @@ This project aims to enhance and analyze the [KMMLU dataset](https://huggingface
 
 - Method: Huggingface LoRA
 
+## File Structure
+```
+.
+├── summarize/
+│   ├── main.py
+│   ├── prompt.py
+│   ├── upload_CoT
+│   ├── upload_summary.py
+│   └── utils.py
+│
+├── train/
+│   ├── data.py
+│   ├── inference.py
+│   ├── main.py
+│   ├── model.py
+│   ├── run_inference.py
+│   ├── train.py
+│   └── trainer.yaml
+├── train_solar/
+│   ├── data.py
+│   ├── inference.py
+│   ├── main.py
+│   ├── model.py
+│   ├── train.py
+│   └── trainer.yaml
+```
+
 ## Dataset Statistics
 - Total size: 36.1 MB
 - Number of rows: 207,251
